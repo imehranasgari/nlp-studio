@@ -68,6 +68,8 @@ This project implements and compares **both classical and modern NLP paradigms**
                      | • Web UI (app_ui.py) + JSON + Jupyter  |
                      +----------------------------------------+
 ```
+## 📷 Preview
+![NLP_Pipeline Demo](screen.gif)
 
 ## 🌟 Key Technical Highlights
 
@@ -286,6 +288,8 @@ This project is licensed under the [MIT License](LICENSE).
                      | • رابط وب (app_ui.py) + JSON + Jupyter |
                      +----------------------------------------+
 ```
+## 📷 پیش نمایش
+![NLP_Pipeline Demo](screen.gif)
 
 ## 🌟 ویژگی‌های فنی برجسته
 
