@@ -1,0 +1,7 @@
+# Core pipeline and Built-in Web UI run with Python Standard Library (Zero mandatory installs)
+# Optional packages for Gradio UI, Hugging Face Transformers, NLTK, and Hazm:
+gradio>=4.0.0
+transformers>=4.40.0
+torch>=2.1.0
+nltk>=3.8.1
+hazm>=0.9.4

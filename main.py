@@ -1,0 +1,94 @@
+# -*- coding: utf-8 -*-
+"""
+File: main.py
+Tozihat: Nokte shorooe barname ba emkan switch beyn hame ravesh haye klasik, jadid va Web UI.
+"""
+
+import argparse
+import copy
+import json
+import os
+from src.config import PIPELINE_CONFIG
+from src.pipeline import MultilingualNLPPipeline
+
+
+def load_sample_documents(filepath: str) -> list[str]:
+    if os.path.exists(filepath):
+        with open(filepath, "r", encoding="utf-8") as f:
+            lines = [line.strip() for line in f if line.strip()]
+            if lines:
+                return lines
+    return [
+    "<article class='news-body'><h1>گزارش جامع تحول پردازش زبان طبیعی (NLP) در سال ۱۴۰۵ و ۲۰۲۶</h1>&nbsp;سلاااام به همه پژوهشگران و دانشجویانِ علاقه‌مند به #هوش_مصنوعی، #پردازش_زبان_طبیعی و #یادگیری_عمیق!! أيا تا به حال به این موضوع فکر کرده‌اید که چرا كتا‌ب‌هاي قدیمیِ فارسی و مقالات علمیِ عربی در سیستم‌های جستجو به درستی بازیابی نمی‌شوند؟ وقتی یک کاربر عبارت «كتاب‌هاي هوش مصنوعي» را با حرف «ك» و «ي» عربی جستجو می‌کند، یا افعالی مانند «می‌روم»، «میروم»، «می‌خواهم»، «میخواهم»، «نمیدونم» و «بزرگترین» را با فاصله یا بدون نیم‌فاصله می‌نویسد، موتورهای جستجوی ساده دچار خطا می‌شوند! 😊🚀 برای دانلود مجموعه داده‌های استاندارد و مستندات فنی به آدرس https://nlp-research-lab.ir/datasets/v3.14 یا ایمیل contact@nlp-research-lab.ir مراجعه کنید و یا با پشتیبانی @nlp_support و شماره تماس 09120000000 در ارتباط باشید.​‎﻿</article>",
+    "<div class='review-card negative'><p>تجربه خرید و بررسی فنی سرور پردازشی و مدل زبانی محلی:</p>متأسفانه کیفیت این محصول اصلاً خوب نبود و پشتیبانی آنلاین شرکت هم به هیچ وجه پاسخگو نیست!! در تبلیغات ادعا شده بود که سرعت استنتاج مدل بسیار بالاست، اما در عمل برنامه پر از خطا و باگ بود و خیلی کند اجرا می‌شد. قیمت نهایی فاکتور ۱۲۵۰۰۰۰ تومان و ١٢٥٠ دلار اعلام شد که واقعاً غیرمنطقی و بسیار گران‌تر از نسخه‌های قبلی است 😡💔؛ من از این خرید اصلاً راضی نیستم و به هیچکس پیشنهاد نمی‌کنم.</p></div>",
+    "<div class='review-card positive'><p>ارزیابی عملکرد پایپ‌لاین جدید بازیابی دانش (RAG) و موتور جستجوی برداری:</p>این سیستم جدید پردازش متن و طبقه‌بندی اسناد فوق‌العاده دقیق، سریع و کاربردی است! معماری ماژولار آن باعث شده که پیش‌پردازش متون فارسی و انگلیسی بدون کوچک‌ترین افت سرعت انجام شود و نتایج جستجوی کسینوسی (Cosine Similarity) بسیار عالی و قابل اعتماد باشند 🌟👏؛ تیم مهندسی نرم‌افزار مستندات بسیار تمیز و کاملی ارائه کرده است و من کاملاً راضی هستم.</p></div>",
+    "In 2026, Dr. Smith, Prof. Johnson, and their research team at U.S.A. were studying complex multilingual corpora (version 3.14 and 2.71), running high-speed NLP pipelines, and analyzing why children's books, mice experiments, and messy web-scraped HTML documents weren't producing better results! They discovered that unhappiness with preprocessing pipelines often happens when naive tokenization splits \"Don't\" incorrectly or removes critical negations like \"not good\" and \"never works\", turning negative customer reviews into false positives. Check https://huggingface.co/learn/nlp-course or contact researcher@stanford.edu for full benchmark datasets.",
+    "تحلیل عمیق چالش‌های صرفی، واژگانی و آماری در زبان فارسی و عربی: در پردازش زبان طبیعی فارسی، یک واژه می‌تواند ده‌ها شکل نوشتاری و صرفی مختلف داشته باشد؛ برای نمونه افعالی مانند «می‌روم»، «میروم»، «رفتم»، «می‌خواهم»، «میخواهم»، «نوشتم»، «می‌کنم»، «میکنم»، «می‌خوانم» و اسامی جمع و صفات تفضیلی مانند «کتاب‌ها»، «کتاب ها»، «دانشجویان»، «مقالات»، «بزرگ‌ترین»، «بزرگ ترین» و «بردارهای معنایی» اگر پیش از ساخت ماتریس Bag-of-Words یا TF-IDF نرمال‌سازی و ریشه‌یابی نشوند، اندازه واژگان (Vocabulary Size) به شدت افزایش یافته و ماتریس ویژگی‌ها دچار پراکندگی شدید (Sparsity) می‌شود. همچنین الگوریتم TF-IDF وزن کلمات ممیز و تخصصی مانند «نوروپاتی»، «توکنایزیشن» و «لمتایزیشن» را بالا می‌برد، در حالی که ایست‌واژه‌های پرتکرار وزنی نزدیک به صفر می‌گیرند.",
+    "گزارش پرونده حقوقی و مطالعه بالینی (تست ایست‌واژه‌های مبتنی بر دامنه - Domain-Specific Stopwords): طبق ماده ۱۴ قانون تجارت الکترونیک، شاکی دادخواست خود را به دادگاه ارائه کرد و مطالعه بالینی نشان داد که بیمار پس از دریافت دارو نتیجه مثبتی داشته است. همچنین در مقاله علمی پیشنهادی، روش جدید در شکل ۳ و جدول ۲ بررسی شده و تیم در مسابقه نهایی عملکرد درخشانی داشت.",
+    "مقایسه جامع معماری‌های کلاسیک یادگیری ماشین با شبکه‌های عصبی عمیق و ترنسفورمرها: مدل‌های کلاسیک مانند Multinomial Naive Bayes، Logistic Regression و Linear SVM همراه با ویژگی‌های TF-IDF و n-gram برای دسته‌بندی سریع متون و تحلیل احساسات بسیار کارآمد و کم‌هزینه هستند، اما توانایی درک عمیق روابط معنایی و بافت (Context) بین کلمات مترادف مانند «سریع» و «تند» یا «fast» و «quick» را ندارند. در مقابل، معماری Transformer با مکانیزم Self-Attention و نمایش‌های برداری متراکم (Embeddings) این محدودیت را برطرف کرده است."
+]
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Multilingual NLP Studio (Preprocessing + Classical ML + Transformers + UI)")
+    parser.add_argument("--ui", action="store_true", help="Launch interactive Web UI on http://127.0.0.1:7860")
+    parser.add_argument("--tokenizer", choices=["whitespace", "regex_smart", "nltk", "hazm", "subword_bpe_demo"])
+    parser.add_argument("--stopwords", choices=["dictionary", "statistical_idf", "domain_specific", "ml_classifier", "hybrid"])
+    parser.add_argument("--domain", choices=["general", "medical", "legal", "sports", "scientific", "ecommerce"])
+    parser.add_argument("--morph", choices=["stem", "lemma", "none"])
+    parser.add_argument("--en-stemmer", choices=["porter", "snowball", "lancaster"])
+    parser.add_argument("--rep", choices=["bow", "tfidf"])
+    parser.add_argument("--keep-negations", choices=["true", "false"])
+    parser.add_argument("--query", default="پردازش زبان طبیعی و کتاب‌های هوش مصنوعی")
+    parser.add_argument("--input", default="data/sample_texts.txt")
+    parser.add_argument("--output", default="outputs/nlp_audit_report.json")
+
+    args = parser.parse_args()
+    if args.ui:
+        from app_ui import launch_builtin_web_ui
+        launch_builtin_web_ui(7860)
+        return
+
+    cfg = copy.deepcopy(PIPELINE_CONFIG)
+    if args.tokenizer:
+        cfg["tokenization"]["method"] = args.tokenizer
+    if args.stopwords:
+        cfg["stopwords"]["method"] = args.stopwords
+    if args.domain:
+        cfg["stopwords"]["domain"] = args.domain
+    if args.morph:
+        cfg["morphology"]["mode"] = args.morph
+    if args.en_stemmer:
+        cfg["morphology"]["en_stemmer"] = args.en_stemmer
+    if args.rep:
+        cfg["representation"]["method"] = args.rep
+    if args.keep_negations:
+        cfg["stopwords"]["keep_negations"] = (args.keep_negations == "true")
+
+    docs = load_sample_documents(args.input)
+    pipeline = MultilingualNLPPipeline(cfg)
+    report = pipeline.analyze_corpus(docs, search_query=args.query)
+
+    os.makedirs(os.path.dirname(args.output), exist_ok=True)
+    with open(args.output, "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+
+    print("=" * 78)
+    print("NLP PIPELINE & CLASSICAL/TRANSFORMER BENCHMARK SUMMARY")
+    print("=" * 78)
+    bench = report["models_benchmark_and_comparison"]["benchmark_metrics"]
+    for m_name, metrics in bench.items():
+        print(f"  {m_name:<28} -> Accuracy: {metrics['Accuracy']} | F1: {metrics['F1_Score']}")
+
+    print("-" * 78)
+    preds = report["models_benchmark_and_comparison"]["single_text_predictions"]
+    print("Sample Prediction on Negative Review:", preds["input_text"])
+    for k, v in preds.items():
+        if k not in ("input_text", "processed_tokens"):
+            print(f"  * {k:<26}: {v}")
+
+    print(f"\nFull JSON Audit & Comparison saved to: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
