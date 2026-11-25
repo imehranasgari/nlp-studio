@@ -448,7 +448,7 @@ def launch_builtin_web_ui(port: int = 7860):
 
       <div class="two-col" style="margin-top:14px;">
         <div class="ablation-box">
-          <h4 style="color:#10b981;">📋 جدول ماتریس سند-واژه (تشبیه اکسل از اسلاید ۳ جلسه ۴)</h4>
+          <h4 style="color:#10b981;">📋 جدول ماتریس سند-واژه </h4>
           <div class="plain-guide" style="font-size:12px;">
             <strong>راهنمای ماتریس سند-واژه:</strong><br>
             این جدول دقیقاً شبیه یک فایل اکسل است: <strong>هر سطر یک سند</strong> (Doc #1 تا Doc #7) و <strong>هر ستون یک کلمه کلیدی</strong> است. عدد <code>0</code> یعنی آن کلمه در آن سند وجود ندارد، و هر عدد بزرگ‌تر از صفر نشان‌دهنده اهمیت (وزن) آن کلمه در آن سند است.

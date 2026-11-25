@@ -5,3 +5,7 @@ transformers>=4.40.0
 torch>=2.1.0
 nltk>=3.8.1
 hazm>=0.9.4
+BeautifulSoup4
+scikit-learn 
+pandas
+matplotlib
